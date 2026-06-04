@@ -1,0 +1,3 @@
+C:\Users\lenovo\source\repos\projectalgo\projectalgo\x64\Debug\projectalgo.vcxproj.AssemblyReference.cache
+C:\Users\lenovo\source\repos\projectalgo\projectalgo\x64\Debug\projectalgo.MyForm.resources
+C:\Users\lenovo\source\repos\projectalgo\projectalgo\x64\Debug\projectalgo.vcxproj.GenerateResource.cache
