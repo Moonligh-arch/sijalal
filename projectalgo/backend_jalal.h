@@ -1,10 +1,11 @@
 #pragma once
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <vector>
-#include <sstream> 
-#include <cstdlib>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <cctype>
 
 using namespace std;
 
@@ -17,11 +18,11 @@ struct Barang {
     int Harga_Barang;
 };
 
-// 2. Vector & File Name (Pake extern biar ramah GUI & ga memicu C7525)
-extern vector<Barang> inventaris;
-extern string namaFile;
+// Trick MSVC biar gak memicu C7525 atau multi-definisi LNK2005 di GUI
+__declspec(selectany) vector<Barang> inventaris;
+__declspec(selectany) string namaFile = "inventaristoko.csv";
 
-// Fungsi sakti v2.0 (Anti Spasi & Anti Huruf Bebas)
+// Fungsi pembantu ambil angka ID
 inline int ambilAngkaID(string id) {
     string kumpulAngka = "";
     for (char c : id) {
@@ -38,7 +39,7 @@ inline int ambilAngkaID(string id) {
     }
 }
 
-// Fungsi kosmetik buat nambahin titik di duit
+// Fungsi format Rupiah
 inline string formatRupiah(int nominal) {
     string hasil = to_string(nominal);
     int panjang = hasil.length();
@@ -48,7 +49,7 @@ inline string formatRupiah(int nominal) {
     return "Rp" + hasil;
 }
 
-// Fungsi perbandingan 2 Tingkat (Level Sepuh)
+// Fungsi perbandingan ID
 inline bool apakahLebihKecil(string a, string b) {
     int angkaA = ambilAngkaID(a);
     int angkaB = ambilAngkaID(b);
@@ -58,9 +59,7 @@ inline bool apakahLebihKecil(string a, string b) {
     return a < b;
 }
 
-// --- DEKLARASI FUNGSI BACKEND --- //
-
-// Fungsi pembantu buat nyusun data secara ANGKA
+// Sorting Insertion Sort
 inline void urutkanInventarisInsertionSort() {
     int n = (int)inventaris.size();
     for (int i = 1; i < n; i++) {
@@ -74,28 +73,19 @@ inline void urutkanInventarisInsertionSort() {
     }
 }
 
-// Fungsi baca data dari CSV (VERSI SUPER - AUTO GENERATE)
+// Baca CSV
 inline void bacaDataCSV() {
     ifstream file(namaFile);
     string baris, id, nama, kategori, stok_str, harga_str;
 
     if (!file.is_open() || file.peek() == std::ifstream::traits_type::eof()) {
         if (file.is_open()) file.close();
-
-        cout << "[WARNING]: File " << namaFile << " gak ketemu atau kosong!" << endl;
-        cout << "[SISTEM]: Tenang bre, sistem lagi nge-generate 500 data dummy otomatis..." << endl;
-
         ofstream fileBaru(namaFile);
-        for (int i = 1; i <= 500; i++) {
-            int stokGen = ((rand() % 1000) + 5) * 1000;
-            int hargaGen = ((rand() % 100) + 5) * 1000;
-            fileBaru << "BRG" << i << "," << "Barang_Toko_" << i << "," << "KategoriUmum" << "," << stokGen << "," << hargaGen << "\n";
-        }
         fileBaru.close();
-        cout << "[SISTEM]: 500 Data Dummy berhasil diciptakan!\n" << endl;
         file.open(namaFile);
     }
 
+    inventaris.clear(); // Bersihkan memori sebelum load ulang
     while (getline(file, baris)) {
         stringstream ss(baris);
         getline(ss, id, ',');
@@ -118,13 +108,10 @@ inline void bacaDataCSV() {
     urutkanInventarisInsertionSort();
 }
 
-// Fungsi simpan 
+// Simpan CSV
 inline void simpanDataCSV() {
     ofstream file(namaFile);
-    if (!file.is_open()) {
-        cout << "[ERROR]: Gagal membuka file " << namaFile << " buat nyimpen data!" << endl;
-        return;
-    }
+    if (!file.is_open()) return;
     for (const auto& item : inventaris) {
         file << item.ID_Barang << ","
             << item.Nama_Barang << ","
@@ -133,178 +120,28 @@ inline void simpanDataCSV() {
             << item.Harga_Barang << "\n";
     }
     file.close();
-    cout << "[SISTEM]: Mantap! " << inventaris.size() << " data berhasil diamankan ke " << namaFile << "." << endl;
 }
 
-// Fungsi Searching (Binary Search)
-inline void cariBarangBinarySearch() {
-    if (inventaris.empty()) {
-        cout << "[ERROR]: Inventaris kosong, gak ada yang bisa dicari!" << endl;
-        return;
-    }
-
-    string targetID;
-    cout << "\n=== CARI BARANG (BINARY SEARCH) ===" << endl;
-    cout << "Masukkan ID Barang yang mau dicari (contoh: BRG50): ";
-    getline(cin, targetID);
-
-    int kiri = 0;
-    int kanan = (int)inventaris.size() - 1;
-    bool ketemu = false;
-
-    while (kiri <= kanan) {
-        int tengah = kiri + (kanan - kiri) / 2;
-        if (inventaris[tengah].ID_Barang == targetID) {
-            cout << "\n[SISTEM]: Barang Ditemukan!" << endl;
-            cout << "ID    : " << inventaris[tengah].ID_Barang << endl;
-            cout << "Nama  : " << inventaris[tengah].Nama_Barang << endl;
-            cout << "Kategori : " << inventaris[tengah].Kategori << endl;
-            cout << "Stok     : " << inventaris[tengah].Stok << " pcs" << endl;
-            cout << "Harga : " << formatRupiah(inventaris[tengah].Harga_Barang) << endl;
-            ketemu = true;
-            break;
-        }
-        else if (apakahLebihKecil(inventaris[tengah].ID_Barang, targetID)) {
-            kiri = tengah + 1;
-        }
-        else {
-            kanan = tengah - 1;
-        }
-    }
-    if (!ketemu) {
-        cout << "\n[ERROR]: Barang dengan ID '" << targetID << "' gak ketemu, bre!" << endl;
-    }
-}
-
-// Fungsi Tambah Barang Konsol
-inline void tambahBarangDenganInsertionSort() {
-    Barang barangBaru;
-    cout << "\n=== TAMBAH BARANG MASUK ===" << endl;
-    cout << "Masukkan ID Barang (contoh: BRG501): ";
-    getline(cin, barangBaru.ID_Barang);
-
-    for (const auto& item : inventaris) {
-        if (item.ID_Barang == barangBaru.ID_Barang) {
-            cout << "[ERROR]: ID Barang udah ada! Gagal menambahkan." << endl;
-            return;
-        }
-    }
-
-    cout << "Masukkan Nama Barang: ";
-    getline(cin, barangBaru.Nama_Barang);
-    cout << "Masukkan Kategori    : ";
-    getline(cin, barangBaru.Kategori);
-
-    string stokInput;
-    bool stokValid = false;
-    while (!stokValid) {
-        cout << "Masukkan Jumlah Stok: ";
-        getline(cin, stokInput);
-        string stokBersih = "";
-        for (char c : stokInput) {
-            if (isdigit(c)) stokBersih += c;
-        }
-        if (stokBersih.empty()) {
-            cout << "[ERROR]: Stok harus pakai angka murni bre!\n";
-        }
-        else {
-            try {
-                barangBaru.Stok = stoi(stokBersih);
-                stokValid = true;
-            }
-            catch (...) {
-                cout << "[ERROR]: Jumlah stok kelebihan!\n";
-            }
-        }
-    }
-
-    string hargaInput;
-    bool hargaValid = false;
-    while (!hargaValid) {
-        cout << "Masukkan Harga Barang: ";
-        getline(cin, hargaInput);
-        string hargaBersih = "";
-        for (char c : hargaInput) {
-            if (isdigit(c)) hargaBersih += c;
-        }
-        if (hargaBersih.empty()) {
-            cout << "[ERROR]: Harganya masukin angka, jangan huruf!\n";
-        }
-        else {
-            try {
-                barangBaru.Harga_Barang = stoi(hargaBersih);
-                hargaValid = true;
-            }
-            catch (...) {
-                cout << "[ERROR]: Angkanya kegedean bre!\n";
-            }
-        }
-    }
-
-    inventaris.push_back(barangBaru);
-    urutkanInventarisInsertionSort();
-    cout << "[SISTEM]: Barang berhasil ditambahkan!" << endl;
-}
-
-// Fungsi nampilin data ke layar konsol
-inline void tampilkanInventaris() {
-    if (inventaris.empty()) {
-        cout << "Inventaris kosong, bre!" << endl;
-        return;
-    }
-    cout << "\n=== DAFTAR BARANG TOKO JALLALUDIN ===" << endl;
-    for (const auto& item : inventaris) {
-        cout << "ID: " << item.ID_Barang
-            << " | Nama: " << item.Nama_Barang
-            << " | Kat: " << item.Kategori
-            << " | Stok: " << item.Stok << " pcs"
-            << " | Harga: " << formatRupiah(item.Harga_Barang) << endl;
-    }
-}
-
-// Fungsi tambahan buat Hapus Barang Konsol
-inline void hapusBarang() {
-    if (inventaris.empty()) {
-        cout << "[ERROR]: Inventaris kosong, gak ada yang bisa dihapus bre!" << endl;
-        return;
-    }
-    string targetID;
-    cout << "\n=== HAPUS BARANG ===" << endl;
-    cout << "Masukkan ID Barang yang mau dihapus: ";
-    getline(cin, targetID);
-
-    bool ketemu = false;
-    for (auto it = inventaris.begin(); it != inventaris.end(); ++it) {
-        if (it->ID_Barang == targetID) {
-            cout << "[SISTEM]: Sayonara! Barang '" << it->Nama_Barang << "' resmi dihapus!" << endl;
-            inventaris.erase(it);
-            ketemu = true;
-            break;
-        }
-    }
-    if (!ketemu) cout << "\n[ERROR]: Barang emang gak ada di gudang!" << endl;
-}
-
-// Pembuat Data Dummy Massal
+// Generator Dummy
 inline void generateSeribuDataDummy() {
     inventaris.clear();
-    cout << "\n[SISTEM]: Memulai proses pabrikasi 100 data dummy..." << endl;
     for (int i = 1; i <= 100; i++) {
         Barang b;
         b.ID_Barang = "BRG" + to_string(i);
-        b.Nama_Barang = "Barang_Ghaib_" + to_string(i);
-        b.Kategori = "Sesuatu" + to_string(i);
+        b.Nama_Barang = "Barang_Toko_"  + to_string(i);
+        b.Kategori = "Random" + to_string(i);
         b.Stok = ((rand() % 1000) + 1) * 100;
         b.Harga_Barang = ((rand() % 1000) + 1) * 100;
         inventaris.push_back(b);
     }
     urutkanInventarisInsertionSort();
-    cout << "[SISTEM]: 100 Data Dummy masuk memori!" << endl;
+    simpanDataCSV();
 }
 
 // ========================================================================
-// FUNGSI JEMBATAN KE GUI VISUAL STUDIO
+// FUNGSI JEMBATAN KE GUI (Wajib Ada Biar MyForm.h Kagak Error)
 // ========================================================================
+
 inline void backendTambahBarang(string id, string nama, string kategori, int stok, int harga) {
     Barang barangBaru;
     barangBaru.ID_Barang = id;
@@ -316,4 +153,32 @@ inline void backendTambahBarang(string id, string nama, string kategori, int sto
     inventaris.push_back(barangBaru);
     urutkanInventarisInsertionSort();
     simpanDataCSV();
+}
+
+// FITUR BARU: Jembatan Update Data untuk GUI Visual Studio
+inline bool backendUbahBarang(string targetID, string namaBaru, string kategoriBaru, string stokStr, string hargaStr) {
+    auto it = find_if(inventaris.begin(), inventaris.end(), [&](const Barang& b) {
+        return b.ID_Barang == targetID;
+        });
+
+    if (it == inventaris.end()) return false; // ID Gak ketemu
+
+    if (!namaBaru.empty()) it->Nama_Barang = namaBaru;
+    if (!kategoriBaru.empty()) it->Kategori = kategoriBaru;
+
+    if (!stokStr.empty()) {
+        string bersih = "";
+        for (char c : stokStr) if (isdigit(c)) bersih += c;
+        if (!bersih.empty()) it->Stok = stoi(bersih);
+    }
+
+    if (!hargaStr.empty()) {
+        string bersih = "";
+        for (char c : hargaStr) if (isdigit(c)) bersih += c;
+        if (!bersih.empty()) it->Harga_Barang = stoi(bersih);
+    }
+
+    urutkanInventarisInsertionSort(); // Urutkan ulang kali aja ada perubahan struktural
+    simpanDataCSV(); // Langsung auto-save ke CSV berkala
+    return true;
 }

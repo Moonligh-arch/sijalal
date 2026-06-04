@@ -12,6 +12,8 @@ extern void backendTambahBarang(std::string id, std::string nama, std::string ka
 extern void simpanDataCSV();
 extern std::string formatRupiah(int nominal);
 extern std::vector<Barang> inventaris;
+extern void generateSeribuDataDummy();
+
 
 namespace projectalgo {
 
@@ -21,7 +23,6 @@ namespace projectalgo {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
-
 	public ref class MyForm : public System::Windows::Forms::Form
 	{
 	public:
@@ -29,8 +30,12 @@ namespace projectalgo {
 		{
 			InitializeComponent();
 
-			// Baca data awal dari CSV backend
+			// 1. PANGGIL FUNGSI BUATAN LU DI SINI:
+			generateSeribuDataDummy();
+
+			// 2. Baca data yang baru di-generate ke layar
 			bacaDataCSV();
+
 
 			// Setup paksa tabel biar kolomnya rapi (5 kolom)
 			dataGridView1->Columns->Clear();
@@ -45,6 +50,7 @@ namespace projectalgo {
 
 			// Daftarkan event Load
 			this->Load += gcnew System::EventHandler(this, &MyForm::MyForm_Load);
+
 		}
 
 	protected:
@@ -73,6 +79,7 @@ namespace projectalgo {
 	private: System::Windows::Forms::Label^ label7;
 	private: System::Windows::Forms::Button^ button3;
 	private: System::Windows::Forms::Button^ button4;
+	private: System::Windows::Forms::Button^ button5;
 
 	private:
 		System::ComponentModel::Container^ components;
@@ -97,6 +104,7 @@ namespace projectalgo {
 			this->label7 = (gcnew System::Windows::Forms::Label());
 			this->button3 = (gcnew System::Windows::Forms::Button());
 			this->button4 = (gcnew System::Windows::Forms::Button());
+			this->button5 = (gcnew System::Windows::Forms::Button());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dataGridView1))->BeginInit();
 			this->SuspendLayout();
 			// 
@@ -264,7 +272,7 @@ namespace projectalgo {
 			// button3
 			// 
 			this->button3->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold));
-			this->button3->Location = System::Drawing::Point(299, 346);
+			this->button3->Location = System::Drawing::Point(300, 344);
 			this->button3->Margin = System::Windows::Forms::Padding(2);
 			this->button3->Name = L"button3";
 			this->button3->Size = System::Drawing::Size(145, 49);
@@ -287,11 +295,25 @@ namespace projectalgo {
 			this->button4->UseVisualStyleBackColor = false;
 			this->button4->Click += gcnew System::EventHandler(this, &MyForm::button4_Click);
 			// 
+			// button5
+			// 
+			this->button5->BackColor = System::Drawing::SystemColors::ButtonHighlight;
+			this->button5->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold));
+			this->button5->Location = System::Drawing::Point(377, 228);
+			this->button5->Margin = System::Windows::Forms::Padding(2);
+			this->button5->Name = L"button5";
+			this->button5->Size = System::Drawing::Size(83, 49);
+			this->button5->TabIndex = 17;
+			this->button5->Text = L"button Update";
+			this->button5->UseVisualStyleBackColor = false;
+			this->button5->Click += gcnew System::EventHandler(this, &MyForm::button5_Click);
+			// 
 			// MyForm
 			// 
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::None;
 			this->BackColor = System::Drawing::SystemColors::Window;
 			this->ClientSize = System::Drawing::Size(536, 765);
+			this->Controls->Add(this->button5);
 			this->Controls->Add(this->button4);
 			this->Controls->Add(this->button3);
 			this->Controls->Add(this->label7);
@@ -465,5 +487,45 @@ private: System::Void button3_Click(System::Object^ sender, System::EventArgs^ e
 		// Tampilkan ulang semua data utuh ke tabel
 		refreshGrid();
 	}
-	};
+	private: System::Void button5_Click(System::Object^ sender, System::EventArgs^ e) {
+		// 1. Ambil semua inputan dari TextBox lu
+		String^ idStr = textBox5->Text->Trim();
+		String^ namaStr = textBox2->Text->Trim();
+		String^ kategoriStr = textBox4->Text->Trim();
+		String^ jumlahStr = textBox1->Text->Trim();
+		String^ hargaStr = textBox3->Text->Trim();
+
+		// 2. Wajibin isi ID, kalau kosong tolak!
+		if (idStr == "") {
+			MessageBox::Show("Ketik dulu ID Barang yang mau di-update, bos!", "Peringatan", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+			return;
+		}
+
+		// 3. Konversi dari String^ (Sistem GUI) ke std::string (C++ murni)
+		std::string id = msclr::interop::marshal_as<std::string>(idStr);
+		std::string nama = msclr::interop::marshal_as<std::string>(namaStr);
+		std::string kategori = msclr::interop::marshal_as<std::string>(kategoriStr);
+		std::string stokOpt = msclr::interop::marshal_as<std::string>(jumlahStr);
+		std::string hargaOpt = msclr::interop::marshal_as<std::string>(hargaStr);
+
+		// 4. Panggil fungsi jembatan update yang udah kita bikin di backend_jalal.h
+		if (backendUbahBarang(id, nama, kategori, stokOpt, hargaOpt)) {
+			// Kalau berhasil update
+			MessageBox::Show("Gacor! Data barang '" + idStr + "' sukses di-update!", "Sukses", MessageBoxButtons::OK, MessageBoxIcon::Information);
+
+			refreshGrid(); // Refresh tabel biar langsung keliatan berubahnya
+
+			// Bersihin TextBox biar form balik rapi
+			textBox5->Clear();
+			textBox2->Clear();
+			textBox4->Clear();
+			textBox1->Clear();
+			textBox3->Clear();
+		}
+		else {
+			// Kalau ID gak ditemuin di database
+			MessageBox::Show("Barang dengan ID '" + idStr + "' kagak ditemuin di gudang!", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+		}
+	}
+};
 }
