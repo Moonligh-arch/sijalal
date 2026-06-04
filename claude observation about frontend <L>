@@ -1,0 +1,15 @@
+⚠️ Potential Issues/Observations:
+Font Issue Status - The notes mention the "Sistem Inventaris" text appears italic on other laptops but normal on yours. The font change to Arial Narrow should help, but this depends on:
+
+Whether Arial Narrow is installed on the target machines
+If not, it will fallback to a default system font
+Recommendation: Add fallback fonts in the Font constructor or test on multiple machines
+AutoScaleMode::None - Setting this to None instead of Font means:
+
+Controls won't automatically resize based on DPI settings
+May cause display issues on high-DPI monitors
+Consider testing on various DPI/resolution settings
+Indentation Issue - Lines 415-456 (button3_Click) and 457-467 (button4_Click) have inconsistent indentation (lines start at column 0 instead of being properly indented within the class)
+
+Not a functional problem but affects code readability
+Should be fixed in a follow-up commit
