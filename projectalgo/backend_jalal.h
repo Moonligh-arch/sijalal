@@ -138,9 +138,7 @@ inline void generateSeribuDataDummy() {
     simpanDataCSV();
 }
 
-// ========================================================================
-// FUNGSI JEMBATAN KE GUI (Wajib Ada Biar MyForm.h Kagak Error)
-// ========================================================================
+
 
 inline void backendTambahBarang(string id, string nama, string kategori, int stok, int harga) {
     Barang barangBaru;
