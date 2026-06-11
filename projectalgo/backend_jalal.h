@@ -73,7 +73,7 @@ inline void urutkanInventarisInsertionSort() {
     }
 }
 
-// Baca CSV
+
 inline void bacaDataCSV() {
     ifstream file(namaFile);
     string baris, id, nama, kategori, stok_str, harga_str;

@@ -29,10 +29,6 @@ namespace projectalgo {
 		{
 			InitializeComponent();
 
-
-			//generateSeribuDataDummy();
-
-
 			bacaDataCSV();
 
 

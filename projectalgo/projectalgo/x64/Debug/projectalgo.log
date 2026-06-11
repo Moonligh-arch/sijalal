@@ -1,2 +1,6 @@
-﻿  MyForm.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
+﻿  MyForm.cpp
+C:\Users\lenovo\source\repos\projectalgo\backend_jalal.h(45,17): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'MyForm.cpp')
+  
+  MyForm.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
   projectalgo.vcxproj -> C:\Users\lenovo\source\repos\projectalgo\x64\Debug\projectalgo.exe
