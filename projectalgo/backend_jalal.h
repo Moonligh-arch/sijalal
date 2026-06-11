@@ -9,7 +9,7 @@
 
 using namespace std;
 
-// 1. Setup Struct
+
 struct Barang {
     string ID_Barang;
     string Nama_Barang;
@@ -18,11 +18,11 @@ struct Barang {
     int Harga_Barang;
 };
 
-// Trick MSVC biar gak memicu C7525 atau multi-definisi LNK2005 di GUI
+
 __declspec(selectany) vector<Barang> inventaris;
 __declspec(selectany) string namaFile = "inventaristoko.csv";
 
-// Fungsi pembantu ambil angka ID
+
 inline int ambilAngkaID(string id) {
     string kumpulAngka = "";
     for (char c : id) {
@@ -39,7 +39,7 @@ inline int ambilAngkaID(string id) {
     }
 }
 
-// Fungsi format Rupiah
+
 inline string formatRupiah(int nominal) {
     string hasil = to_string(nominal);
     int panjang = hasil.length();
@@ -49,7 +49,7 @@ inline string formatRupiah(int nominal) {
     return "Rp" + hasil;
 }
 
-// Fungsi perbandingan ID
+
 inline bool apakahLebihKecil(string a, string b) {
     int angkaA = ambilAngkaID(a);
     int angkaB = ambilAngkaID(b);
@@ -59,7 +59,7 @@ inline bool apakahLebihKecil(string a, string b) {
     return a < b;
 }
 
-// Sorting Insertion Sort
+
 inline void urutkanInventarisInsertionSort() {
     int n = (int)inventaris.size();
     for (int i = 1; i < n; i++) {
@@ -85,7 +85,7 @@ inline void bacaDataCSV() {
         file.open(namaFile);
     }
 
-    inventaris.clear(); // Bersihkan memori sebelum load ulang
+    inventaris.clear();  
     while (getline(file, baris)) {
         stringstream ss(baris);
         getline(ss, id, ',');
@@ -108,7 +108,7 @@ inline void bacaDataCSV() {
     urutkanInventarisInsertionSort();
 }
 
-// Simpan CSV
+
 inline void simpanDataCSV() {
     ofstream file(namaFile);
     if (!file.is_open()) return;
@@ -122,7 +122,7 @@ inline void simpanDataCSV() {
     file.close();
 }
 
-// Generator Dummy
+
 inline void generateSeribuDataDummy() {
     inventaris.clear();
     for (int i = 1; i <= 100; i++) {
@@ -153,13 +153,13 @@ inline void backendTambahBarang(string id, string nama, string kategori, int sto
     simpanDataCSV();
 }
 
-// FITUR BARU: Jembatan Update Data untuk GUI Visual Studio
+
 inline bool backendUbahBarang(string targetID, string namaBaru, string kategoriBaru, string stokStr, string hargaStr) {
     auto it = find_if(inventaris.begin(), inventaris.end(), [&](const Barang& b) {
         return b.ID_Barang == targetID;
         });
 
-    if (it == inventaris.end()) return false; // ID Gak ketemu
+    if (it == inventaris.end()) return false; 
 
     if (!namaBaru.empty()) it->Nama_Barang = namaBaru;
     if (!kategoriBaru.empty()) it->Kategori = kategoriBaru;
@@ -176,7 +176,7 @@ inline bool backendUbahBarang(string targetID, string namaBaru, string kategoriB
         if (!bersih.empty()) it->Harga_Barang = stoi(bersih);
     }
 
-    urutkanInventarisInsertionSort(); // Urutkan ulang kali aja ada perubahan struktural
-    simpanDataCSV(); // Langsung auto-save ke CSV berkala
+    urutkanInventarisInsertionSort();
+    simpanDataCSV(); 
     return true;
 }

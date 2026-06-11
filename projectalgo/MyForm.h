@@ -30,7 +30,7 @@ namespace projectalgo {
 			InitializeComponent();
 
 
-			generateSeribuDataDummy();
+			//generateSeribuDataDummy();
 
 
 			bacaDataCSV();
@@ -506,11 +506,11 @@ namespace projectalgo {
 		}
 	}
 	private: System::Void button4_Click(System::Object^ sender, System::EventArgs^ e) {
-		textBox5->Clear(); // ID Barang
-		textBox2->Clear(); // Nama Barang
-		textBox4->Clear(); // Kategori
-		textBox1->Clear(); // Jumlah
-		textBox3->Clear(); // Harga
+		textBox5->Clear();
+		textBox2->Clear(); 
+		textBox4->Clear(); 
+		textBox1->Clear(); 
+		textBox3->Clear(); 
 
 		refreshGrid();
 	}
